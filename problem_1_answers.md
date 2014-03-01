@@ -1,3 +1,5 @@
+## Repository Visuals  
+
 Contributors to a Repository:  
   - The audience looks like it's for project managers and the contributors to keep track of commits and changes to the code.  
   - The data used looks like the contributions for a particular repository.  You can use the command: GET /repos/:owner/:repo/stats/contributors to get this information  
@@ -30,3 +32,9 @@ Map:
   - The audience for this could be anyone, a project manager, another contributor, a recruiter.  It basically would give a good overview on how active a user is based on the public profile.  
   - The data retuns most of the public information about the user, and you can get it by using: GET /users/:user  
   - In this case, if the user makes a lot of commits at a single instant, we can just darken the shade of the square on the map.  
+  
+## Network Graph  
+
+1.  The role of this interaction is kind of to show the evolution of the project over time.  You can see the different commit activity and merge activity, so basically you get a good idea of how the project was evolving.  I think a static graph would not be good enough, because you wouldn't be able to get the details that you get with this graph.  In this graph, you can move around the graph, you can show/hide the tag markers, you can hover over for commit details, you can click on one of the commits to go to the specific commit, and you can click on different usernames to have that user as the root.  
+2.  If many users suddenly joined the project and pushed commits for the first time, some things I could do is scale inwards, so that everything is larger and clearer.  I could also add the option to show/hide some users, in case I'm only interested in the activity of a few of them. In most cases, the readability of the graph is dependent on how cluttered it is, and to further prevent cluttering I could possibly add more padding between the lines so they don't exactly intersect.  
+

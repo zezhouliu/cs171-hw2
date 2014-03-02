@@ -149,6 +149,15 @@ function random_layout() {
     d.x = width/4 + 2*width*Math.random()/4;
     d.y = height/4 + 2*height*Math.random()/4;
   })
+
+  groups.selectAll("text")
+  .attr("x", function(d) { return 0; })
+  .attr("y", function(d) { return 0; })
+  .text(function(d) { return ""; })
+  .attr("dy", function(d) {
+      // add a little padding
+      return 2;
+  });
   
   graph_update(500);
 }
@@ -158,11 +167,29 @@ function force_layout() {
  force.nodes(graph.nodes)
       .links(graph.links)
       .start();
+
+  groups.selectAll("text")
+	  .attr("x", function(d) { return 0; })
+	  .attr("y", function(d) { return 0; })
+	  .text(function(d) { return ""; })
+	  .attr("dy", function(d) {
+	      // add a little padding
+	      return 2;
+  });
 }
 
 function line_layout() {
 
   force.stop();
+
+  groups.selectAll("text")
+  .attr("x", function(d) { return 0; })
+  .attr("y", function(d) { return 0; })
+  .text(function(d) { return ""; })
+  .attr("dy", function(d) {
+      // add a little padding
+      return 2;
+  });
 
   graph.nodes.forEach(function(d, i) {
     d.y = height/2;
@@ -175,15 +202,41 @@ function line_cat_layout() {
 
   force.stop();
 
+  var authors = new Array();
   graph.nodes.forEach(function(d, i) {
-    d.y = height/2 + d.cat*20;
+  	if (authors.indexOf(d.committer.id) < 0) {
+  		authors.push(d.committer.id);
+  	}
   })
+
+
+  graph.nodes.forEach(function(d, i) {
+    d.y = height/2 + authors.indexOf(d.committer.id)*20;
+  })
+
+  groups.append("text")
+  .attr("x", function(d) { return 5; })
+  .attr("y", function(d) { return height/2 + authors.indexOf(d.committer.id)*20; })
+  .text(function(d) { return d.commit.author.name; })
+  .attr("dy", function(d) {
+      // add a little padding
+      return 2;
+  });
 
   graph_update(500);
 }
 
 function index_layout() {
 	force.stop();
+
+	groups.selectAll("text")
+  .attr("x", function(d) { return 0; })
+  .attr("y", function(d) { return 0; })
+  .text(function(d) { return ""; })
+  .attr("dy", function(d) {
+      // add a little padding
+      return 2;
+  });
 
   graph.nodes.forEach(function(d, i) {
     d.y = height/2;

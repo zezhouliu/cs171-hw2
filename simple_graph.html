@@ -17,7 +17,8 @@
     fill: red;
   }
 
-  div.tooltip {   
+  div.tooltip {
+  	/* Code found on tutorial online */   
 	  position: absolute;           
 	  text-align: left;                           
 	  padding: 10px;             
@@ -45,23 +46,18 @@
     <label><input type="radio" name="color" value="color_cat" > Category</label>
   </form>
   <form>
-<!--   Size:
-    <label><input type="radio" name="size" value="nosize" checked> None</label>
-    <label><input type="radio" name="size" value="size_cat" > Category</label>
-  </form> -->
-  <form>
   Linear:
     <label><input type="radio" name="index" value="index" > Line By Index </label>
     <label><input type="radio" name="index" value="time" > Line By Time</label>
+  </form>
+  <form>
+  Aggregate:
+    <label><input type="radio" name="aggregate" value="branches" > Aggregate Dangling Branches </label>
   </form>
 <script>
 
 var width = 900,
     height = 700;
-
-// var svg = d3.select("body").append("svg")
-//             .attr("width", width)
-//             .attr("height", height);
 
 var fill = d3.scale.category10();
 
@@ -108,24 +104,6 @@ d3.json("https://api.github.com/repos/caleydo/caleydo/commits", function (error,
     .attr("orient", "auto")
 	  .append("svg:path")
 	  .attr("d", "M0,-5L10,0L0,5");
-
-// add the links and the arrows
-// var path = svg.append("svg:g").selectAll("path") 	
-//     .attr("class", function(d) { return "link " + d.type; })
-//     .attr("marker-end", "url(#end)");
-
-// graph.nodes = d3.range(nb_nodes).map(function() {  
-//   return { cat:Math.floor(nb_cat*Math.random()) }; 
-// })
-
-// graph.nodes.map(function(d, i) {
-
-//   graph.nodes.map(function(e, j) {
-//     if(Math.random()>.99 && i!=j)
-//       graph.links.push({"source": i, "target": j})
-
-//   })
-// })
 
 // Generate the force layout
 var force = d3.layout.force()
@@ -248,7 +226,7 @@ function index_layout() {
 
 function time_layout() {
 
-	 force.stop();
+	force.stop();
 	
 	var min = d3.min(graph.nodes, function(d) {
                 return Math.min(Date.parse(d["commit"]["author"]["date"]));
@@ -300,6 +278,85 @@ groups.append("text")
 
 }
 
+function branch_layout() {
+
+	force.stop();
+
+	var min = d3.min(graph.nodes, function(d) {
+    return Math.min(Date.parse(d["commit"]["author"]["date"]));
+  });
+
+	var max = d3.max(graph.nodes, function(d) {
+    return Math.max(Date.parse(d["commit"]["author"]["date"]));
+  });
+
+	var time = d3.time.scale()
+    .domain([min, max])
+    .range([100, width - 40]);
+
+  // get all unique authors
+  var authors = new Array();
+  graph.nodes.forEach(function(d, i) {
+  	if (authors.indexOf(d.committer.id) < 0) {
+  		authors.push(d.committer.id);
+  	}
+  })
+
+  var y_scale = d3.scale.linear()
+  	.domain([0, authors.length - 1])
+  	.range([20, height - 40]);
+
+  var color = d3.scale.linear()
+    .domain([0, authors.length - 1])
+    .interpolate(d3.interpolateRgb)
+    .range(["red", "purple"]);
+
+
+  var hash = new Array();
+	
+
+	for (var i = 0; i < graph.nodes.length - 1; ++i) {
+		
+
+	}
+
+	var index = 0;
+  graph.nodes.forEach(function(d, i) {
+    d.y = y_scale(authors.indexOf(d.committer.id));
+
+    if (i < graph.nodes.length - 1) {
+    	var time1 = Date.parse(graph.nodes[i].commit.author.date);
+			var time2 = Date.parse(graph.nodes[i + 1].commit.author.date);
+			if (Math.abs(time1 - time2) < 12000000) {
+				console.log("LESS");
+
+				d.x = time(Date.parse(graph.nodes[index].commit.author.date));
+				svg.selectAll("")
+			}
+			else {
+				index = i + 1;
+				d.x = time(Date.parse(graph.nodes[index].commit.author.date));
+			}
+    }
+    
+
+  });
+
+// Add text for the row values
+groups.append("text")
+  .attr("x", function(d) { return 5; })
+  .attr("y", function(d) { return y_scale(authors.indexOf(d.committer.id)); })
+  .text(function(d) { return d.commit.author.name; })
+  .attr("dy", function(d) {
+      // add a little padding
+      return 2;
+  });
+
+  graph_update(500);
+
+
+}
+
 function radial_layout() {
 
   force.stop();
@@ -320,7 +377,7 @@ function radial_layout() {
     d.data.y = arc.centroid(d)[1]+width/2;
     d.data.endAngle = d.endAngle; 
     d.data.startAngle = d.startAngle; 
-    return d.data;
+    return d.data; 
   })
 
   graph_update(500);
@@ -356,7 +413,7 @@ d3.select("input[value=\"line_cat\"]").on("click", line_cat_layout);
 d3.select("input[value=\"radial\"]").on("click", radial_layout);
 d3.select("input[value=\"index\"]").on("click", index_layout);
 d3.select("input[value=\"time\"]").on("click", time_layout);
-
+d3.select("input[value=\"branches\"]").on("click", branch_layout);
 
 d3.select("input[value=\"nocolor\"]").on("click", function() {
   d3.selectAll("circle").transition().duration(50).style("fill", "#66CC66");

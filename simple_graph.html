@@ -50,13 +50,8 @@
     <label><input type="radio" name="size" value="size_cat" > Category</label>
   </form> -->
   <form>
-  Index:
-    <label><input type="radio" name="index" value="noindex" checked> None</label>
+  Linear:
     <label><input type="radio" name="index" value="index" > Line By Index </label>
-  </form>
-  <form>
-  Time:
-    <label><input type="radio" name="time" value="notime" checked> None</label>
     <label><input type="radio" name="time" value="time" > Line By Time</label>
   </form>
 <script>
@@ -218,10 +213,17 @@ function time_layout() {
   	.domain([0, authors.length - 1])
   	.range([20, height - 40]);
 
+  var color = d3.scale.linear()
+    .domain([0, authors.length - 1])
+    .interpolate(d3.interpolateRgb)
+    .range(["red", "purple"]);
+
+
   graph.nodes.forEach(function(d, i) {
     d.y = y_scale(authors.indexOf(d.committer.id));
     d.x = time(Date.parse(d.commit.author.date));
-  })
+
+  });
 
   graph_update(50);
 
@@ -254,11 +256,12 @@ function radial_layout() {
 }
 
 function category_color() {
-  d3.selectAll("circle").transition().duration(500).style("fill", function(d) { return fill(d.cat); });
+  // fill the colors
+  d3.selectAll("circle").transition().duration(50).style("fill", function(d) { return fill(d.committer.id)});
 }
 
 function category_size() {
-  d3.selectAll("circle").transition().duration(500).attr("r", function(d) { return Math.sqrt((d.cat+1)*10); });
+  d3.selectAll("circle").transition().duration(50).attr("r", function(d) { return Math.sqrt((d.committer.id+1)*10); });
 }
 
 function graph_update(delay) {
@@ -285,13 +288,13 @@ d3.select("input[value=\"time\"]").on("click", time_layout);
 
 
 d3.select("input[value=\"nocolor\"]").on("click", function() {
-  d3.selectAll("circle").transition().duration(500).style("fill", "#66CC66");
+  d3.selectAll("circle").transition().duration(50).style("fill", "#66CC66");
 })
 
 d3.select("input[value=\"color_cat\"]").on("click", category_color);
 
 d3.select("input[value=\"nosize\"]").on("click", function() {
-  d3.selectAll("circle").transition().duration(500).attr("r", 5);
+  d3.selectAll("circle").transition().duration(50).attr("r", 5);
 })
 
 d3.select("input[value=\"size_cat\"]").on("click", category_size);

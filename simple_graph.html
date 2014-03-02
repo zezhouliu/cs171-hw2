@@ -17,6 +17,17 @@
     fill: red;
   }
 
+  div.tooltip {   
+	  position: absolute;           
+	  text-align: left;                           
+	  padding: 10px;             
+	  font: 12px sans-serif;        
+	  background: lightsteelblue;   
+	  border: 0px;      
+	  border-radius: 8px;           
+	  pointer-events: none;         
+	}
+
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
@@ -37,6 +48,16 @@
   Size:
     <label><input type="radio" name="size" value="nosize" checked> None</label>
     <label><input type="radio" name="size" value="size_cat" > Category</label>
+  </form>
+  <form>
+  Index:
+    <label><input type="radio" name="index" value="noindex" checked> None</label>
+    <label><input type="radio" name="index" value="index" > Category</label>
+  </form>
+  <form>
+  Time:
+    <label><input type="radio" name="time" value="notime" checked> None</label>
+    <label><input type="radio" name="time" value="time" > Category</label>
   </form>
 <script>
 
@@ -226,6 +247,10 @@ d3.select("input[value=\"nosize\"]").on("click", function() {
 
 d3.select("input[value=\"size_cat\"]").on("click", category_size);
 
+var div = d3.select("body").append("div")   
+    .attr("class", "tooltip")               
+    .style("opacity", 0);
+
 var link = svg.selectAll(".link")
               .data(graph.links)
             .enter().append("line")
@@ -234,8 +259,16 @@ var link = svg.selectAll(".link")
 
 var node = svg.selectAll(".node")
               .data(graph.nodes)
-            .enter()
-              .append("g").attr("class", "node");
+            	.enter()
+              .append("g").attr("class", "node")
+              .on("mouseover", function(d) {      
+		            div.transition()        
+		                .duration(200)      
+		                .style("opacity", .9);      
+		            div .html(d["committer"]["login"] + "<br/>" + d["sha"] + "<br/>" + d["commit"]["author"]["date"])  
+		                .style("left", (d3.event.pageX) + "px")     
+		                .style("top", (d3.event.pageY - 28) + "px");    
+            	});
 
 node.append("circle")
     .attr("r", 5)

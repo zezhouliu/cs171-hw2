@@ -28,3 +28,6 @@ One possible way to improve the visualization is by implementing clusters or sup
 My design for this implementation was essentially to aggregate unnecessary data together to make the graph clearer.  For the first example, of aggregating dangling branches, the idea is the create large nodes whenever the branches don't merge back into master.  This means that if we have a side branch that has a bunch of commits but never ended up merging back into master, we can just aggregate them into large nodes.  However, this doesn't mean we completely get rid of them; we should enable the user interaction so that when they click on a large node, it will expand back into its original graph.  
 
 There is a similar idea for the aggregate anomalies, where we group up bunches of nodes that are too close together and overlap.  This is kind of a solution addressing the problem discussed in problem 1, where a committer might make a bunch of commits in a short amount of time.  When this happens, we can bunch them together to make the graph clearer, and when they click on it again, it'll expand back to its original form and zoom in to make the visual clearer.
+
+
+NOTE: Currently, it only groups nodes and doesn't allow for expansion

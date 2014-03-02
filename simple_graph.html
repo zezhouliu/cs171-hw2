@@ -315,11 +315,6 @@ function branch_layout() {
   var hash = new Array();
 	
 
-	for (var i = 0; i < graph.nodes.length - 1; ++i) {
-		
-
-	}
-
 	var index = 0;
   graph.nodes.forEach(function(d, i) {
     d.y = y_scale(authors.indexOf(d.committer.id));

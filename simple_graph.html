@@ -45,19 +45,19 @@
     <label><input type="radio" name="color" value="color_cat" > Category</label>
   </form>
   <form>
-  Size:
+<!--   Size:
     <label><input type="radio" name="size" value="nosize" checked> None</label>
     <label><input type="radio" name="size" value="size_cat" > Category</label>
-  </form>
+  </form> -->
   <form>
   Index:
     <label><input type="radio" name="index" value="noindex" checked> None</label>
-    <label><input type="radio" name="index" value="index" > Category</label>
+    <label><input type="radio" name="index" value="index" > Line By Index </label>
   </form>
   <form>
   Time:
     <label><input type="radio" name="time" value="notime" checked> None</label>
-    <label><input type="radio" name="time" value="time" > Category</label>
+    <label><input type="radio" name="time" value="time" > Line By Time</label>
   </form>
 <script>
 
@@ -181,6 +181,21 @@ function line_cat_layout() {
   graph_update(500);
 }
 
+function index_layout() {
+	force.stop();
+
+  graph.nodes.forEach(function(d, i) {
+    d.y = height/2;
+    d.x = i*20;
+  })
+
+  graph_update(500);
+}
+
+function time_layout() {
+	
+}
+
 function radial_layout() {
 
   force.stop();
@@ -234,6 +249,9 @@ d3.select("input[value=\"random\"]").on("click", random_layout);
 d3.select("input[value=\"line\"]").on("click", line_layout);
 d3.select("input[value=\"line_cat\"]").on("click", line_cat_layout);
 d3.select("input[value=\"radial\"]").on("click", radial_layout);
+d3.select("input[value=\"index\"]").on("click", index_layout);
+d3.select("input[value=\"time\"]").on("click", time_layout);
+
 
 d3.select("input[value=\"nocolor\"]").on("click", function() {
   d3.selectAll("circle").transition().duration(500).style("fill", "#66CC66");
@@ -246,6 +264,9 @@ d3.select("input[value=\"nosize\"]").on("click", function() {
 })
 
 d3.select("input[value=\"size_cat\"]").on("click", category_size);
+
+d3.select("input[value=\"noindex\"]").on("click", force_layout);
+d3.select("input[value=\"notime\"]").on("click", force_layout);
 
 var div = d3.select("body").append("div")   
     .attr("class", "tooltip")               
@@ -268,6 +289,11 @@ var node = svg.selectAll(".node")
 		            div .html(d["committer"]["login"] + "<br/>" + d["sha"] + "<br/>" + d["commit"]["author"]["date"])  
 		                .style("left", (d3.event.pageX) + "px")     
 		                .style("top", (d3.event.pageY - 28) + "px");    
+            	})
+            	.on("mouseout", function(d) {      
+		            div.transition()        
+		                .duration(500)      
+		                .style("opacity", 0);
             	});
 
 node.append("circle")

@@ -84,7 +84,7 @@ d3.json("https://api.github.com/repos/caleydo/caleydo/commits", function (error,
 			for (var k = 0; k < d.length; ++k) {
 
 				if (d[k]["sha"] == sha) {
-					graph.links.push({"source": i, "target": k})
+					graph.links.push({"source": k, "target": i})
 				}
 			}
 		}
@@ -194,6 +194,25 @@ function index_layout() {
 
 function time_layout() {
 	
+	var min = d3.min(graph.nodes, function(d) {
+                return Math.min(Date.parse(d["commit"]["author"]["date"]));
+              });
+
+	var max = d3.max(graph.nodes, function(d) {
+                return Math.max(Date.parse(d["commit"]["author"]["date"]));
+              });
+
+	var time = d3.time.scale()
+    .domain([min, max])
+    .range([20, width - 40]);
+
+  graph.nodes.forEach(function(d, i) {
+    d.y = height/2;
+    d.x = time(Date.parse(d.commit.author.date));
+  })
+
+  graph_update(500);
+
 }
 
 function radial_layout() {

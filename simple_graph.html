@@ -49,22 +49,37 @@ var svg = d3.select("body").append("svg")
 
 var fill = d3.scale.category10();
 
-var graph = {nodes:[], links:[]};
+d3.json("https://api.github.com/repos/caleydo/caleydo/commits", function (error, d) {
 
-var nb_nodes = 100, nb_cat = 10;
+	// get all commits
+	var graph = {nodes:d, links:[]};
 
-graph.nodes = d3.range(nb_nodes).map(function() {  
-  return { cat:Math.floor(nb_cat*Math.random()) }; 
-})
+	for (var i = 0; i < d.length; ++i) {
+		var parents = d[i]["parents"];
 
-graph.nodes.map(function(d, i) {
+		for (var j = 0; j < parents.length; ++j) {
+			var sha = parents[j]["sha"];
 
-  graph.nodes.map(function(e, j) {
-    if(Math.random()>.99 && i!=j)
-      graph.links.push({"source": i, "target": j})
+			for (var k = 0; k < d.length; ++k) {
 
-  })
-})
+				if (d[k]["sha"] == sha) {
+					graph.links.push({"source": i, "target": k})
+				}
+			}
+		}
+	}
+// graph.nodes = d3.range(nb_nodes).map(function() {  
+//   return { cat:Math.floor(nb_cat*Math.random()) }; 
+// })
+
+// graph.nodes.map(function(d, i) {
+
+//   graph.nodes.map(function(e, j) {
+//     if(Math.random()>.99 && i!=j)
+//       graph.links.push({"source": i, "target": j})
+
+//   })
+// })
 
 // Generate the force layout
 var force = d3.layout.force()
@@ -202,6 +217,7 @@ node.append("circle")
 
 force_layout();
 
+});
 </script>
 </body>
 </html>

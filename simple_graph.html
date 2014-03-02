@@ -52,16 +52,16 @@
   <form>
   Linear:
     <label><input type="radio" name="index" value="index" > Line By Index </label>
-    <label><input type="radio" name="time" value="time" > Line By Time</label>
+    <label><input type="radio" name="index" value="time" > Line By Time</label>
   </form>
 <script>
 
 var width = 900,
     height = 700;
 
-var svg = d3.select("body").append("svg")
-            .attr("width", width)
-            .attr("height", height);
+// var svg = d3.select("body").append("svg")
+//             .attr("width", width)
+//             .attr("height", height);
 
 var fill = d3.scale.category10();
 
@@ -88,6 +88,12 @@ d3.json("https://api.github.com/repos/caleydo/caleydo/commits", function (error,
 	var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
+
+  var groups = svg.append("g")
+      .selectAll("g")
+      .data(d)
+    	.enter()
+      .append("g");
 
 	// build the arrow.
 	svg.append("svg:defs").selectAll("marker")
@@ -184,10 +190,12 @@ function index_layout() {
     d.x = i*20;
   })
 
-  graph_update(50);
+  graph_update(500);
 }
 
 function time_layout() {
+
+	 force.stop();
 	
 	var min = d3.min(graph.nodes, function(d) {
                 return Math.min(Date.parse(d["commit"]["author"]["date"]));
@@ -199,7 +207,7 @@ function time_layout() {
 
 	var time = d3.time.scale()
     .domain([min, max])
-    .range([20, width - 40]);
+    .range([100, width - 40]);
 
   // get all unique authors
   var authors = new Array();
@@ -225,7 +233,17 @@ function time_layout() {
 
   });
 
-  graph_update(50);
+// Add text for the row values
+groups.append("text")
+  .attr("x", function(d) { return 5; })
+  .attr("y", function(d) { return y_scale(authors.indexOf(d.committer.id)); })
+  .text(function(d) { return d.commit.author.name; })
+  .attr("dy", function(d) {
+      // add a little padding
+      return 2;
+  });
+
+  graph_update(500);
 
 }
 

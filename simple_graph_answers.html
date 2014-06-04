@@ -1,412 +1,68 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <meta charset="utf-8">
-<title>Homework 2 Graph</title>
+<title>Homework 2 GitHub Network Graphs</title>
 <style>
-  .link {
-    stroke: gray;
-    stroke-width: 1.5px;
-  }
+    .link {
+        stroke: gray;
+        stroke-width: 1.5px;
+    }
 
-  .node {
-    fill: #66CC66;
-    stroke: #000;
-    stroke-width: 1px;
-  }
+    .node {
+        cursor: move;
+        fill: #66CC66;
+        stroke: #000;
+        stroke-width: 1px;
+    }
 
-  .node:hover {
-    fill: red;
-  }
+        .node.highlight {
+            fill: #f00;
+        }
 
-  div.tooltip {   
-	  position: absolute;           
-	  text-align: left;                           
-	  padding: 10px;             
-	  font: 12px sans-serif;        
-	  background: lightsteelblue;   
-	  border: 0px;      
-	  border-radius: 8px;           
-	  pointer-events: none;         
-	}
+    path.link {
+        stroke: black;
+        stroke-opacity: 0.8;
+        stroke-width: 1.5px;
+        fill: none;
+        pointer-events: none;
+    }
 
+    .tooltip {
+        font-size: 12px;
+        text-align: center;
+        padding: 0;
+        margin: 0;
+    }
+
+    .domain {
+        visibility: "hidden";
+    }
 </style>
 <body>
-<script src="http://d3js.org/d3.v3.min.js"></script>
-  <form>
-  Layout:
-    <label><input type="radio" name="layout" value="force" checked> Force</label>
-    <label><input type="radio" name="layout" value="random" > Random</label>
-    <label><input type="radio" name="layout" value="radial"> Radial</label>  
-    <label><input type="radio" name="layout" value="line"> Line</label>
-    <label><input type="radio" name="layout" value="line_cat"> Line by Category</label>
-  </form>
-  <form>
-  Color:
-    <label><input type="radio" name="color" value="nocolor" checked> None</label>
-    <label><input type="radio" name="color" value="color_cat" > Category</label>
-  </form>
-  <form>
-<!--   Size:
-    <label><input type="radio" name="size" value="nosize" checked> None</label>
-    <label><input type="radio" name="size" value="size_cat" > Category</label>
-  </form> -->
-  <form>
-  Linear:
-    <label><input type="radio" name="index" value="index" > Line By Index </label>
-    <label><input type="radio" name="index" value="time" > Line By Time</label>
-  </form>
-<script>
-
-var width = 900,
-    height = 700;
-
-// var svg = d3.select("body").append("svg")
-//             .attr("width", width)
-//             .attr("height", height);
-
-var fill = d3.scale.category10();
-
-d3.json("https://api.github.com/repos/caleydo/caleydo/commits", function (error, d) {
-
-	// get all commits
-	var graph = {nodes:d, links:[]};
-
-	for (var i = 0; i < d.length; ++i) {
-		var parents = d[i]["parents"];
-
-		for (var j = 0; j < parents.length; ++j) {
-			var sha = parents[j]["sha"];
-
-			for (var k = 0; k < d.length; ++k) {
-
-				if (d[k]["sha"] == sha) {
-					graph.links.push({"source": k, "target": i})
-				}
-			}
-		}
-	}
-
-	var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
-
-  var groups = svg.append("g")
-      .selectAll("g")
-      .data(d)
-    	.enter()
-      .append("g");
-
-	// build the arrow.
-	svg.append("svg:defs").selectAll("marker")
-	  .data(["end"])      // Different link/path types can be defined here
-	  .enter().append("svg:marker")    // This section adds in the arrows
-    .attr("id", String)
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
-    .attr("orient", "auto")
-	  .append("svg:path")
-	  .attr("d", "M0,-5L10,0L0,5");
-
-// add the links and the arrows
-// var path = svg.append("svg:g").selectAll("path") 	
-//     .attr("class", function(d) { return "link " + d.type; })
-//     .attr("marker-end", "url(#end)");
-
-// graph.nodes = d3.range(nb_nodes).map(function() {  
-//   return { cat:Math.floor(nb_cat*Math.random()) }; 
-// })
-
-// graph.nodes.map(function(d, i) {
-
-//   graph.nodes.map(function(e, j) {
-//     if(Math.random()>.99 && i!=j)
-//       graph.links.push({"source": i, "target": j})
-
-//   })
-// })
-
-// Generate the force layout
-var force = d3.layout.force()
-    .size([width, height])
-    .charge(-50)
-    .linkDistance(10)
-    .on("tick", tick)
-    .on("start", function(d) {})
-    .on("end", function(d) {})
-
-function tick(d) {
-
-  graph_update(0);
-}
-
-function random_layout() {
-  
-  force.stop();
-
-  graph.nodes.forEach(function(d, i) {
-    d.x = width/4 + 2*width*Math.random()/4;
-    d.y = height/4 + 2*height*Math.random()/4;
-  })
-
-  groups.selectAll("text")
-  .attr("x", function(d) { return 0; })
-  .attr("y", function(d) { return 0; })
-  .text(function(d) { return ""; })
-  .attr("dy", function(d) {
-      // add a little padding
-      return 2;
-  });
-  
-  graph_update(500);
-}
-
-function force_layout() {
-
- force.nodes(graph.nodes)
-      .links(graph.links)
-      .start();
-
-  groups.selectAll("text")
-	  .attr("x", function(d) { return 0; })
-	  .attr("y", function(d) { return 0; })
-	  .text(function(d) { return ""; })
-	  .attr("dy", function(d) {
-	      // add a little padding
-	      return 2;
-  });
-}
-
-function line_layout() {
-
-  force.stop();
-
-  groups.selectAll("text")
-  .attr("x", function(d) { return 0; })
-  .attr("y", function(d) { return 0; })
-  .text(function(d) { return ""; })
-  .attr("dy", function(d) {
-      // add a little padding
-      return 2;
-  });
-
-  graph.nodes.forEach(function(d, i) {
-    d.y = height/2;
-  })
-
-  graph_update(500);
-}
-
-function line_cat_layout() {
-
-  force.stop();
-
-  var authors = new Array();
-  graph.nodes.forEach(function(d, i) {
-  	if (authors.indexOf(d.committer.id) < 0) {
-  		authors.push(d.committer.id);
-  	}
-  })
-
-
-  graph.nodes.forEach(function(d, i) {
-    d.y = height/2 + authors.indexOf(d.committer.id)*20;
-  })
-
-  groups.append("text")
-  .attr("x", function(d) { return 5; })
-  .attr("y", function(d) { return height/2 + authors.indexOf(d.committer.id)*20; })
-  .text(function(d) { return d.commit.author.name; })
-  .attr("dy", function(d) {
-      // add a little padding
-      return 2;
-  });
-
-  graph_update(500);
-}
-
-function index_layout() {
-	force.stop();
-
-	groups.selectAll("text")
-  .attr("x", function(d) { return 0; })
-  .attr("y", function(d) { return 0; })
-  .text(function(d) { return ""; })
-  .attr("dy", function(d) {
-      // add a little padding
-      return 2;
-  });
-
-  graph.nodes.forEach(function(d, i) {
-    d.y = height/2;
-    d.x = i*20;
-  })
-
-  graph_update(500);
-}
-
-function time_layout() {
-
-	 force.stop();
-	
-	var min = d3.min(graph.nodes, function(d) {
-                return Math.min(Date.parse(d["commit"]["author"]["date"]));
-              });
-
-	var max = d3.max(graph.nodes, function(d) {
-                return Math.max(Date.parse(d["commit"]["author"]["date"]));
-              });
-
-	var time = d3.time.scale()
-    .domain([min, max])
-    .range([100, width - 40]);
-
-  // get all unique authors
-  var authors = new Array();
-  graph.nodes.forEach(function(d, i) {
-  	if (authors.indexOf(d.committer.id) < 0) {
-  		authors.push(d.committer.id);
-  	}
-  })
-
-  var y_scale = d3.scale.linear()
-  	.domain([0, authors.length - 1])
-  	.range([20, height - 40]);
-
-  var color = d3.scale.linear()
-    .domain([0, authors.length - 1])
-    .interpolate(d3.interpolateRgb)
-    .range(["red", "purple"]);
-
-
-  graph.nodes.forEach(function(d, i) {
-    d.y = y_scale(authors.indexOf(d.committer.id));
-    d.x = time(Date.parse(d.commit.author.date));
-
-  });
-
-// Add text for the row values
-groups.append("text")
-  .attr("x", function(d) { return 5; })
-  .attr("y", function(d) { return y_scale(authors.indexOf(d.committer.id)); })
-  .text(function(d) { return d.commit.author.name; })
-  .attr("dy", function(d) {
-      // add a little padding
-      return 2;
-  });
-
-  graph_update(500);
-
-}
-
-function radial_layout() {
-
-  force.stop();
-
-  var r = height/2;
-
-  var arc = d3.svg.arc()
-          .outerRadius(r);
-
-  var pie = d3.layout.pie()
-  .sort(function(a, b) { return a.cat - b.cat;})
-          .value(function(d, i) { return 1; }); // equal share for each point
-
-  graph.nodes = pie(graph.nodes).map(function(d, i) {
-    d.innerRadius = 0;
-    d.outerRadius = r;
-    d.data.x = arc.centroid(d)[0]+height/2;
-    d.data.y = arc.centroid(d)[1]+width/2;
-    d.data.endAngle = d.endAngle; 
-    d.data.startAngle = d.startAngle; 
-    return d.data;
-  })
-
-  graph_update(500);
-}
-
-function category_color() {
-  // fill the colors
-  d3.selectAll("circle").transition().duration(50).style("fill", function(d) { return fill(d.committer.id)});
-}
-
-function category_size() {
-  d3.selectAll("circle").transition().duration(50).attr("r", function(d) { return Math.sqrt((d.committer.id+1)*10); });
-}
-
-function graph_update(delay) {
-
-  link.transition().duration(delay)
-      .attr("x1", function(d) { return d.target.x; })
-      .attr("y1", function(d) { return d.target.y; })
-      .attr("x2", function(d) { return d.source.x; })
-      .attr("y2", function(d) { return d.source.y; });
-
-  node.transition().duration(delay)
-      .attr("transform", function(d) { 
-        return "translate("+d.x+","+d.y+")"; 
-      });
-}
-
-d3.select("input[value=\"force\"]").on("click", force_layout);
-d3.select("input[value=\"random\"]").on("click", random_layout);
-d3.select("input[value=\"line\"]").on("click", line_layout);
-d3.select("input[value=\"line_cat\"]").on("click", line_cat_layout);
-d3.select("input[value=\"radial\"]").on("click", radial_layout);
-d3.select("input[value=\"index\"]").on("click", index_layout);
-d3.select("input[value=\"time\"]").on("click", time_layout);
-
-
-d3.select("input[value=\"nocolor\"]").on("click", function() {
-  d3.selectAll("circle").transition().duration(50).style("fill", "#66CC66");
-})
-
-d3.select("input[value=\"color_cat\"]").on("click", category_color);
-
-d3.select("input[value=\"nosize\"]").on("click", function() {
-  d3.selectAll("circle").transition().duration(50).attr("r", 5);
-})
-
-d3.select("input[value=\"size_cat\"]").on("click", category_size);
-
-d3.select("input[value=\"noindex\"]").on("click", force_layout);
-d3.select("input[value=\"notime\"]").on("click", force_layout);
-
-var div = d3.select("body").append("div")   
-    .attr("class", "tooltip")               
-    .style("opacity", 0);
-
-var link = svg.selectAll(".link")
-              .data(graph.links)
-            .enter().append("line")
-              .attr("class", "link")
-              .attr("marker-end", "url(#end)");
-
-var node = svg.selectAll(".node")
-              .data(graph.nodes)
-            	.enter()
-              .append("g").attr("class", "node")
-              .on("mouseover", function(d) {      
-		            div.transition()        
-		                .duration(200)      
-		                .style("opacity", .9);      
-		            div .html(d["committer"]["login"] + "<br/>" + d["sha"] + "<br/>" + d["commit"]["author"]["date"])  
-		                .style("left", (d3.event.pageX) + "px")     
-		                .style("top", (d3.event.pageY - 28) + "px");    
-            	})
-            	.on("mouseout", function(d) {      
-		            div.transition()        
-		                .duration(500)      
-		                .style("opacity", 0);
-            	});
-
-node.append("circle")
-    .attr("r", 5)
-
-force_layout();
-
-});
-</script>
+    <script src="http://d3js.org/d3.v3.js"></script>
+    <script src="/js/graph.js"></script>
+    <form>
+        Layout:
+        <label><input type="radio" name="layout" value="force" checked> Force</label>
+        <label><input type="radio" name="layout" value="random"> Random</label>
+        <label><input type="radio" name="layout" value="radial"> Radial</label>
+        <label><input type="radio" name="layout" value="line"> Line</label>
+        <label><input type="radio" name="layout" value="line_time"> Line by Time</label>
+        <label><input type="radio" name="layout" value="line_index"> Line by Index</label>
+    </form>
+    <form>
+        Color:
+        <label><input type="radio" name="color" value="nocolor" checked> None</label>
+        <label><input type="radio" name="color" value="color_cat"> Category</label>
+    </form>
+    <form>
+        Size:
+        <label><input type="radio" name="size" value="nosize" checked> None</label>
+        <label><input type="radio" name="size" value="size_cat"> Category</label>
+    </form>
+    <form>
+        Link:
+        <label><input type="radio" name="line" value="direct" checked> Direct</label>
+        <label><input type="radio" name="line" value="control"> Control</label>
+    </form>
 </body>
 </html>
